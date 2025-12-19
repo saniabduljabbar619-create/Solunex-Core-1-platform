@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ title or "Solunex Core 1" }}</title>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/static/css/style.css" />
+
+    <!-- Optional head scripts -->
+    {% block head_scripts %}{% endblock %}
+</head>
+
+<body>
+    <!-- Top Navigation Bar -->
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-icon"></div>
+            <div class="brand-text">
+                Solunex <span>Core&nbsp;1</span>
+            </div>
+        </div>
+
+        <nav class="nav-menu">
+            <a href="/admin/dashboard">Dashboard</a>
+            <a href="/admin/license_bank">License Bank</a>
+            <a href="/admin/posting">Posting</a>
+            <a href="/admin/services/view">Services</a>
+
+            <a href="/admin/logout" class="logout">Logout</a>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>© 2025 Solunex Systems • All Rights Reserved</p>
+    </footer>
+
+    <!-- JS Scripts -->
+    <script src="/static/js/admin.js" defer></script>
+    {% block body_scripts %}{% endblock %}
+</body>
+</html>

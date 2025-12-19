@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="services-container">
+
+    <h2 class="page-title">System Services</h2>
+    <p class="subtitle">Monitor and control all Solunex Core 1 internal services</p>
+
+    <div id="serviceCards" class="services-grid">
+        <!-- Cards load via JS -->
+    </div>
+
+    <h3 class="table-title">Service Registry</h3>
+
+    <table class="service-table glass">
+        <thead>
+            <tr>
+                <th>Label</th>
+                <th>Status</th>
+                <th>Health</th>
+                <th>Last Check</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="serviceTableBody">
+        </tbody>
+    </table>
+
+</div>
+{% endblock %}
+
+
+{% block body_scripts %}
+<script>
+async function loadServices() {
+    const res = await fetch("/admin/api/services", { credentials: "include" });
+    if (!res.ok) return;
+
+    const data = await res.json();
+
+    const cards = document.getElementById("serviceCards");
+    const table = document.getElementById("serviceTableBody");
+
+    cards.innerHTML = "";
+    table.innerHTML = "";
+
+    data.services.forEach(s => {
+
+        cards.innerHTML += `
+            <div class="service-card glass">
+                <h4>${s.label}</h4>
+                <p class="service-desc">${s.description}</p>
+
+                <div class="service-info">
+                    <span class="badge ${s.status ? "on" : "off"}">${s.status ? "Enabled" : "Disabled"}</span>
+                    <span class="badge ${s.health}">${s.health}</span>
+                </div>
+
+                <small>Last check: ${new Date(s.last_check).toLocaleString()}</small>
+
+                <div class="service-actions">
+                    <button onclick="toggleService(${s.id})">Toggle</button>
+                    <button onclick="restartService(${s.id})">Restart</button>
+                    <button onclick="healthCheck(${s.id})">Ping</button>
+                </div>
+            </div>
+        `;
+
+        table.innerHTML += `
+            <tr>
+                <td>${s.label}</td>
+                <td><span class="badge ${s.status ? "on" : "off"}">${s.status ? "Enabled" : "Disabled"}</span></td>
+                <td><span class="badge ${s.health}">${s.health}</span></td>
+                <td>${new Date(s.last_check).toLocaleString()}</td>
+                <td>
+                    <button onclick="toggleService(${s.id})">Toggle</button>
+                    <button onclick="healthCheck(${s.id})">Ping</button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+async function toggleService(id) {
+    await fetch(`/admin/api/services/${id}/toggle`, { method: "POST", credentials: "include" });
+    loadServices();
+}
+
+async function restartService(id) {
+    await fetch(`/admin/api/services/${id}/restart`, { method: "POST", credentials: "include" });
+    loadServices();
+}
+
+async function healthCheck(id) {
+    await fetch(`/admin/api/services/${id}/health`, { method: "POST", credentials: "include" });
+    loadServices();
+}
+
+setInterval(loadServices, 15000);
+document.addEventListener("DOMContentLoaded", loadServices);
+
+</script>
+
+{% endblock %}

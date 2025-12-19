@@ -1,0 +1,463 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-wrapper">
+
+    <!-- Header -->
+    <section class="glass card page-header">
+        <h2>License Bank</h2>
+        <p class="subtitle">Manage, search and audit all issued licenses</p>
+    </section>
+
+    <!-- Controls: Search / Filter / Export -->
+    <section class="glass card controls">
+        <div class="controls-row">
+            <input type="text" id="searchBox" class="input" placeholder="Search by email, app name or license key...">
+            <select id="statusFilter" class="input">
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="revoked">Revoked</option>
+                <option value="expired">Expired</option>
+            </select>
+
+            <label class="small-label">Per page</label>
+            <select id="perPage" class="input small">
+                <option value="10">10</option>
+                <option value="20" selected>20</option>
+                <option value="50">50</option>
+            </select>
+
+            <button class="action-btn" id="searchBtn">Search</button>
+
+            <a id="exportBtn" class="action-btn" href="#" download>Export CSV</a>
+        </div>
+    </section>
+
+    <!-- License Table -->
+    <section class="glass card">
+        <div class="table-wrap">
+            <table class="sol-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>License Key</th>
+                        <th>User</th>
+                        <th>App</th>
+                        <th>Status</th>
+                        <th>Issued</th>
+                        <th>Expires</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="licenseTableBody">
+                    <tr><td colspan="8" style="text-align:center;">Loading…</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+            <button id="prevBtn" class="btn small" onclick="prevPage()">Prev</button>
+            <span id="pageInfo">Page 1</span>
+            <button id="nextBtn" class="btn small" onclick="nextPage()">Next</button>
+        </div>
+    </section>
+
+</div>
+
+<!-- Modal: License Details & Actions -->
+<div id="licenseModal" class="modal hidden">
+    <div class="modal-overlay" onclick="closeModal()"></div>
+    <div class="modal-content glass card">
+        <button class="modal-close" onclick="closeModal()">✕</button>
+        <h3>License Details</h3>
+
+        <div id="modalContent" class="modal-body">
+            <!-- Filled dynamically -->
+            <div class="modal-row"><strong>License Key:</strong> <span id="m_license_key">-</span></div>
+            <div class="modal-row"><strong>User Email:</strong> <span id="m_user_email">-</span></div>
+            <div class="modal-row"><strong>App:</strong> <span id="m_app_name">-</span></div>
+            <div class="modal-row"><strong>Status:</strong> <span id="m_status">-</span></div>
+            <div class="modal-row"><strong>Issued At:</strong> <span id="m_generated_at">-</span></div>
+            <div class="modal-row"><strong>Expires At:</strong> <span id="m_expires_at">-</span></div>
+        </div>
+
+        <hr />
+
+        <!-- Edit form -->
+        <form id="editForm" class="modal-form" onsubmit="event.preventDefault(); saveChanges();">
+            <h4>Edit License</h4>
+            <label>Email</label>
+            <input id="edit_email" type="email" class="input" required>
+            <label>App Name</label>
+            <input id="edit_app" type="text" class="input" required>
+            <label>Expires At (ISO)</label>
+            <input id="edit_expires" type="datetime-local" class="input">
+
+            <div class="modal-actions">
+                <button type="button" class="action-btn" onclick="saveChanges()">Save</button>
+                <button type="button" class="action-btn" onclick="renewPrompt()">Renew</button>
+                <button type="button" class="danger-btn" onclick="revokePrompt()">Revoke</button>
+                <button type="button" class="danger-btn" onclick="deletePrompt()">Delete</button>
+                <button type="button" class="close-btn" onclick="closeModal()">Close</button>
+            </div>
+
+
+        </form>
+
+        <div id="modalResp" class="response-box" style="display:none;margin-top:12px;"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block body_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+
+        window.renewPrompt = function () {
+        if (confirm("Extend license by 365 days?")) {
+            renewLicense(currentLicenseId);
+        }
+    };
+
+    window.revokePrompt = function () {
+        const reason = prompt("Reason for revocation (optional):", "");
+        revokeLicense(currentLicenseId, reason);
+    };
+
+    window.deletePrompt = function () {
+        if (confirm("Delete license permanently?")) {
+            deleteLicense(currentLicenseId);
+        }
+    };
+
+  /* ---------------------------
+     License Bank UI logic
+     Matches backend: /admin/licenses
+  --------------------------- */
+
+  let currentPage = 1;
+  const perPageEl = document.getElementById('perPage');
+  let perPage = Number((perPageEl && perPageEl.value) || 20);
+  let lastTotal = 0;
+  let currentLicenseId = null;
+
+  // safe element getters
+  const searchBtn = document.getElementById('searchBtn');
+  const searchBox = document.getElementById('searchBox');
+  const statusFilter = document.getElementById('statusFilter');
+  const exportBtn = document.getElementById('exportBtn');
+  const pageInfo = document.getElementById('pageInfo');
+  const tbody = document.getElementById('licenseTableBody');
+
+  function safeText(v){ return v == null ? "-" : v; }
+
+  // helper: parse JSON safely (fallback to text)
+  async function parseResponse(res){
+    const text = await res.text().catch(()=>"");
+    try {
+      return text ? JSON.parse(text) : null;
+    } catch(e){
+      return { detail: text || res.statusText || `HTTP ${res.status}` };
+    }
+  }
+
+  // build export link
+  function updateExportLink() {
+      const q = encodeURIComponent((searchBox && searchBox.value) || "");
+      const status = encodeURIComponent((statusFilter && statusFilter.value) || "");
+      const href = `/admin/licenses/export?status=${status}` + (q ? `&q=${q}` : '');
+      if (exportBtn) exportBtn.href = href;
+  }
+
+  async function loadLicenses() {
+      const q = encodeURIComponent((searchBox && searchBox.value) || "");
+      const status = encodeURIComponent((statusFilter && statusFilter.value) || "");
+      updateExportLink();
+
+      const url = `/admin/licenses?page=${currentPage}&per_page=${perPage}`
+                + (status ? `&status=${status}` : '')
+                + (q ? `&q=${q}` : '');
+
+      if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">Loading…</td></tr>`;
+
+      try {
+          const res = await fetch(url, {
+              method: "GET",
+              credentials: "include"
+          });
+
+          if (!res.ok) {
+              const err = await parseResponse(res);
+              if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:crimson;">Error: ${err.detail || res.statusText}</td></tr>`;
+              return;
+          }
+
+          const data = await res.json().catch(()=>null);
+          if (!data) {
+              const parsed = await parseResponse(res);
+              if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:crimson;">Error: ${parsed.detail || 'Invalid response'}</td></tr>`;
+              return;
+          }
+
+          lastTotal = data.total || 0;
+
+          if (!data.items || data.items.length === 0) {
+              if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">No licenses found</td></tr>`;
+              if (pageInfo) pageInfo.innerText = `Page ${currentPage}`;
+              return;
+          }
+
+          if (tbody) tbody.innerHTML = '';
+          for (const row of data.items) {
+              const statusClass = (row.status || '').toLowerCase();
+              const expires = row.expires_at ? safeText(row.expires_at) : "-";
+              const generated = row.generated_at ? safeText(row.generated_at) : "-";
+
+              tbody.innerHTML += `
+                  <tr>
+                      <td>${row.id}</td>
+                      <td class="mono">${row.license_key}</td>
+                      <td>${row.user_email || ""}</td>
+                      <td>${row.app_name || ""}</td>
+                      <td><span class="tag ${statusClass}">${row.status || ""}</span></td>
+                      <td>${generated}</td>
+                      <td>${expires}</td>
+                      <td>
+                          <button class="view-btn" onclick="openModal(${row.id})">View</button>
+                          <button class="action-btn" onclick="quickRevoke('${row.license_key}')">Revoke</button>
+                      </td>
+                  </tr>
+              `;
+          }
+
+          if (pageInfo) pageInfo.innerText = `Page ${currentPage} — ${data.items.length} of ${data.total || '?'}`;
+
+      } catch (err) {
+          if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:crimson;">Network error</td></tr>`;
+          console.error("loadLicenses:", err);
+      }
+  }
+
+  function nextPage() { currentPage++; loadLicenses(); }
+  function prevPage() { if (currentPage>1) { currentPage--; loadLicenses(); } }
+
+  // Expose pagination functions globally (used by inline onclicks)
+  window.nextPage = nextPage;
+  window.prevPage = prevPage;
+
+  // Fetch modal details
+  window.openModal = async function openModal(id) {
+      currentLicenseId = id;
+      const modal = document.getElementById('licenseModal');
+      const modalResp = document.getElementById('modalResp');
+      if (modalResp) { modalResp.style.display = 'none'; modalResp.className='response-box'; }
+
+      try {
+          const res = await fetch(`/admin/licenses/${id}`, {
+              method: "GET",
+              credentials: "include"
+          });
+
+          if (!res.ok) {
+              const err = await parseResponse(res);
+              alert("Failed to load license: " + (err.detail || res.statusText));
+              return;
+          }
+
+          const data = await res.json().catch(()=>null);
+          if (!data) {
+              const parsed = await parseResponse(res);
+              alert("Failed to load license: " + (parsed.detail || 'Invalid response'));
+              return;
+          }
+
+          document.getElementById('m_license_key').innerText = data.license_key || '-';
+          document.getElementById('m_user_email').innerText = data.user_email || '-';
+          document.getElementById('m_app_name').innerText = data.app_name || '-';
+          document.getElementById('m_status').innerText = data.status || '-';
+          document.getElementById('m_generated_at').innerText = data.generated_at || '-';
+          document.getElementById('m_expires_at').innerText = data.expires_at || '-';
+
+          document.getElementById('edit_email').value = data.user_email || '';
+          document.getElementById('edit_app').value = data.app_name || '';
+
+          if (data.expires_at) {
+              const d = new Date(data.expires_at);
+              document.getElementById('edit_expires').value = d.toISOString().slice(0,16);
+          } else {
+              document.getElementById('edit_expires').value = '';
+          }
+
+          if (modal) modal.classList.remove('hidden');
+
+      } catch (err) {
+          console.error("openModal:", err);
+          alert("Unexpected error loading license.");
+      }
+  };
+
+  function closeModal() {
+      const modal = document.getElementById('licenseModal');
+      if (modal) modal.classList.add('hidden');
+      currentLicenseId = null;
+      const modalResp = document.getElementById('modalResp');
+      if (modalResp) { modalResp.style.display='none'; modalResp.className='response-box'; }
+  }
+  window.closeModal = closeModal;
+
+  // Save edit
+  window.saveChanges = async function saveChanges() {
+      if (!currentLicenseId) return;
+
+      const payload = {
+          user_email: document.getElementById('edit_email').value,
+          app_name: document.getElementById('edit_app').value,
+      };
+
+      const exp = document.getElementById('edit_expires').value;
+      if (exp) payload.expires_at = new Date(exp).toISOString();
+
+      try {
+          const res = await fetch(`/admin/licenses/${currentLicenseId}`, {
+              method: "PUT",
+              credentials: "include",
+              headers: {"Content-Type":"application/json"},
+              body: JSON.stringify(payload)
+          });
+
+          const data = await parseResponse(res);
+          const box = document.getElementById('modalResp');
+          if (box) box.style.display='block';
+
+          if (!res.ok) {
+              if (box) { box.innerText = `Error: ${data.detail || res.statusText}`; box.className = 'response-box error'; }
+              return;
+          }
+
+          if (box) { box.innerText = `Saved successfully.`; box.className = 'response-box success'; }
+          await loadLicenses();
+          setTimeout(()=> openModal(currentLicenseId), 600);
+
+      } catch (err) {
+          console.error("saveChanges:", err);
+          const box = document.getElementById('modalResp');
+          if (box) { box.style.display='block'; box.className='response-box error'; box.innerText='Network error.'; }
+      }
+  };
+
+  // Revoke
+  window.revokeLicense = async function revokeLicense(id, reason='') {
+      try {
+          const res = await fetch(`/admin/licenses/${id}/revoke`, {
+              method: "POST",
+              credentials: "include",
+              headers: {"Content-Type":"application/json"},
+              body: JSON.stringify({reason})
+          });
+
+          const data = await parseResponse(res);
+
+          if (!res.ok) {
+              alert("Failed to revoke: " + (data.detail || res.statusText));
+              return;
+          }
+
+          alert("License revoked.");
+          closeModal(); loadLicenses();
+
+      } catch (err) {
+          console.error("revokeLicense:", err);
+          alert("Network error.");
+      }
+  };
+
+  // Quick revoke by key
+  window.quickRevoke = async function quickRevoke(license_key) {
+      if (!confirm(`Revoke license ${license_key}?`)) return;
+
+      try {
+          const res = await fetch(`/admin/licenses/by_key/revoke?license_key=${encodeURIComponent(license_key)}`, {
+              method: "POST",
+              credentials: "include",
+              headers: { "Accept": "application/json" }
+          });
+
+          const data = await parseResponse(res);
+
+          if (!res.ok) {
+              alert("Failed: " + (data.detail || res.statusText));
+              return;
+          }
+
+          alert("Revoked.");
+          loadLicenses();
+
+      } catch (err) {
+          console.error("quickRevoke:", err);
+          alert("Network error");
+      }
+  };
+
+  // Renew
+  window.renewLicense = async function renewLicense(id, extend_days=365) {
+      try {
+          const res = await fetch(`/admin/licenses/${id}/renew`, {
+              method: "POST",
+              credentials: "include",
+              headers: {"Content-Type":"application/json"},
+              body: JSON.stringify({extend_days})
+          });
+
+          const data = await parseResponse(res);
+          if (!res.ok) {
+              alert("Renew error: " + (data.detail || res.statusText));
+              return;
+          }
+          alert("License renewed.");
+          closeModal(); loadLicenses();
+
+      } catch (err) {
+          console.error("renewLicense:", err);
+          alert("Network error.");
+      }
+  };
+
+  // Delete
+  window.deleteLicense = async function deleteLicense(id) {
+      try {
+          const res = await fetch(`/admin/licenses/${id}`, {
+              method: "DELETE",
+              credentials: "include"
+          });
+
+          // some DELETE handlers return 204 No Content
+          if (res.status === 204 || res.ok) {
+              alert("Deleted.");
+              closeModal(); loadLicenses();
+              return;
+          }
+
+          const data = await parseResponse(res);
+          alert("Delete failed: " + (data.detail || res.statusText));
+
+      } catch (err) {
+          console.error("deleteLicense:", err);
+          alert("Network error.");
+      }
+  };
+
+  // wire up controls if present
+  if (searchBtn) searchBtn.addEventListener('click', () => { currentPage = 1; loadLicenses(); });
+  if (perPageEl) perPageEl.addEventListener('change', (e) => { perPage = Number(e.target.value); currentPage = 1; loadLicenses(); });
+  if (searchBox) searchBox.addEventListener('keyup', (e)=> { if (e.key === 'Enter') { currentPage = 1; loadLicenses(); }});
+  if (statusFilter) statusFilter.addEventListener('change', ()=> { currentPage = 1; loadLicenses(); });
+
+  // initial load
+  updateExportLink();
+  loadLicenses();
+});
+</script>
+
+{% endblock %}

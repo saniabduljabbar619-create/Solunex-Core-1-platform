@@ -1,0 +1,51 @@
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.service-card {
+    padding: 20px;
+    border-radius: 12px;
+}
+
+.service-desc {
+    font-size: 13px;
+    opacity: .7;
+}
+
+.service-info {
+    display: flex;
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.badge {
+    padding: 5px 12px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.badge.on { background:#0CC07133; color:#0CC071; }
+.badge.off { background:#FFCC0033; color:#CC9900; }
+.badge.online { background:#0CC07133; color:#0CC071; }
+.badge.error { background:#FF444433; color:#FF4444; }
+.badge.offline { background:#CCCCCC55; color:#808080; }
+
+.service-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 40px;
+}
+
+.service-table th, .service-table td {
+    padding: 12px;
+    border-bottom: 1px solid #EEE;
+}
+
+.service-actions button {
+    margin-right: 5px;
+    padding: 5px 10px;
+}

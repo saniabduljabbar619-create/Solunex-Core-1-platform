@@ -1,0 +1,183 @@
+/* -----------------------------------------------------------
+   Solunex Core 1 Dashboard - Unified (compat selectors)
+   ----------------------------------------------------------- */
+
+:root{
+    --primary: #027a3e;
+    --primary-light: #04c971;
+    --dark: #00322d;
+    --muted: #666;
+    --card-radius: 14px;
+}
+
+/* ---------- Container (two possible names supported) ---------- */
+.dashboard-container,
+.dash-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 20px;
+}
+
+/* ---------- Glass / card base (two names supported) ---------- */
+.glass,
+.glass-card {
+    background: rgba(255,255,255,0.45);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: var(--card-radius);
+    border: 1px solid rgba(255,255,255,0.35);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.10);
+}
+
+/* generic card padding */
+.card,
+.card.stat,
+.glass-card,
+.stat-card,
+.chart-card {
+    padding: 1.4rem;
+}
+
+/* ---------- Header (compat names) ---------- */
+.header-card,
+.dash-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+}
+
+.header-card h2,
+.dash-header h2 {
+    margin: 0;
+    font-size: 1.6rem;
+    color: var(--dark);
+}
+
+.subtitle { color: var(--muted); margin-top: 4px; font-size:0.95rem; }
+
+/* status indicator */
+.status-indicator,
+.status-dot {
+    padding: 8px 14px;
+    background: var(--primary-light);
+    color: #fff;
+    border-radius: 10px;
+    font-weight:600;
+}
+
+/* ---------- Stats grid (compat names) ---------- */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.2rem;
+}
+
+/* some older variants used .stat-card and .card.stat */
+.stat-card,
+.card.stat,
+.stat {
+    text-align: center;
+    padding: 1.2rem;
+    transition: transform .18s ease;
+    background: transparent;
+}
+
+.stat-card:hover,
+.card.stat:hover { transform: translateY(-4px); }
+
+.stat-card h3,
+.card.stat h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    color: var(--dark);
+}
+
+.stat-value,
+.stat-card p,
+.card.stat p {
+    display: block;
+    margin-top: 10px;
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: var(--primary-light);
+}
+
+/* ---------- Charts area (compat names) ---------- */
+.charts-wrapper,
+.charts-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1.5rem;
+}
+
+.chart-card,
+.charts-wrapper .chart-card,
+.charts-row .chart-card {
+    background: transparent;
+    padding: 1rem;
+}
+
+/* ensure canvas responsive sizing */
+canvas {
+    width: 100% !important;
+    height: 260px !important;
+}
+
+/* ---------- Quick actions (compat names) ---------- */
+.quick-actions,
+.quick-links {
+    padding: 1rem;
+}
+
+.action-btn-group,
+.quick-buttons {
+    display: flex;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+}
+
+.action-btn,
+.quick-btn {
+    background: var(--primary);
+    color: #fff;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    display:inline-block;
+    transition: background .18s ease, transform .18s ease;
+}
+
+.action-btn:hover,
+.quick-btn:hover {
+    background: var(--primary-light);
+    transform: translateY(-3px);
+}
+
+/* ---------- Updates list ---------- */
+.updates,
+.updates.card {
+    padding: 1rem;
+}
+
+.updates ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.updates li {
+    padding: 8px 0;
+    border-left: 3px solid rgba(4,201,113,0.14);
+    padding-left: 10px;
+}
+
+/* ---------- Responsive tweaks ---------- */
+@media (max-width: 900px) {
+    .charts-wrapper,
+    .charts-row {
+        grid-template-columns: 1fr;
+    }
+    canvas { height: 220px !important; }
+}

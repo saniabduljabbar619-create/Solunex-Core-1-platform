@@ -1,0 +1,170 @@
+/* -----------------------------------------------------------
+   Solunex Core 1 • Premium Layout System
+   Navigation • Branding • Structure
+----------------------------------------------------------- */
+
+:root {
+    --primary: #027a3e;
+    --primary-light: #04c971;
+    --dark: #012e29;
+    --text-light: #eaeaea;
+    --text: #222;
+    --white: #ffffff;
+    --muted: #8a8a8a;
+
+    --radius: 12px;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.12);
+    --shadow-md: 0 6px 20px rgba(0,0,0,0.15);
+
+    --transition: 0.25s ease;
+}
+
+/* -----------------------------------------------------------
+   TOPBAR
+----------------------------------------------------------- */
+.topbar {
+    width: 100%;
+    background: var(--dark);
+    padding: 0.9rem 2.4rem;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    box-shadow: var(--shadow-sm);
+    position: sticky;
+    top: 0;
+    z-index: 999;
+}
+
+/* ----------------------- Branding ----------------------- */
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--primary-light), var(--primary));
+    box-shadow: var(--shadow-sm);
+}
+
+.brand-text {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--white);
+    letter-spacing: 0.4px;
+}
+
+.brand-text span {
+    color: var(--primary-light);
+    font-weight: 600;
+}
+
+/* ----------------------- Navigation ----------------------- */
+
+.nav-menu {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+}
+
+.nav-menu a {
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+
+    color: var(--text-light);
+    padding: 8px 14px;
+    border-radius: 6px;
+
+    transition: var(--transition);
+}
+
+.nav-menu a:hover {
+    background: rgba(255,255,255,0.08);
+    color: var(--primary-light);
+}
+
+.nav-menu a.active {
+    background: var(--primary-light);
+    color: var(--white);
+    font-weight: 600;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Logout Button */
+.logout {
+    background: var(--primary);
+    color: white !important;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 6px;
+    box-shadow: var(--shadow-sm);
+}
+
+.logout:hover {
+    background: #025d30;
+}
+
+/* -----------------------------------------------------------
+   MAIN CONTENT AREA
+----------------------------------------------------------- */
+
+.main-content {
+    max-width: 1250px;
+    margin: 40px auto;
+    padding: 0 28px;
+    min-height: 70vh;
+}
+
+/* -----------------------------------------------------------
+   FOOTER
+----------------------------------------------------------- */
+
+.footer {
+    text-align: center;
+    padding: 2rem;
+    font-size: 0.95rem;
+    color: var(--muted);
+    margin-top: 3rem;
+}
+
+/* -----------------------------------------------------------
+   RESPONSIVE — MOBILE ADAPTIVE NAVIGATION
+----------------------------------------------------------- */
+
+@media (max-width: 900px) {
+
+    .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1rem 1.4rem;
+    }
+
+    .nav-menu {
+        margin-top: 12px;
+        gap: 1.1rem;
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 550px) {
+
+    .brand-text {
+        font-size: 1.1rem;
+    }
+
+    .nav-menu a {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+    }
+
+    .main-content {
+        padding: 0 18px;
+    }
+}

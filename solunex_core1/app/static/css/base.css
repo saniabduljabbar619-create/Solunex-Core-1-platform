@@ -1,0 +1,107 @@
+/* -----------------------------------------------------------
+   Solunex Core 1 - Base UI Styling
+   Professional, Lightweight & Future Proof
+----------------------------------------------------------- */
+
+:root {
+    --primary: #027a3e;
+    --primary-light: #04c971;
+    --dark: #00322d;
+    --text: #222;
+    --muted: #666;
+    --bg: #f4f7f6;
+    --white: #ffffff;
+    --shadow: 0 2px 6px rgba(0,0,0,0.12);
+    --radius: 10px;
+    --transition: 0.25s ease;
+}
+
+/* GLOBAL */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    font-family: "Segoe UI", Roboto, sans-serif;
+    color: var(--text);
+    line-height: 1.5;
+}
+
+/* -----------------------------------------------------------
+   TOP BAR
+----------------------------------------------------------- */
+.topbar {
+    width: 100%;
+    background: var(--white);
+    padding: 14px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.logo {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.top-nav {
+    display: flex;
+    gap: 25px;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: var(--dark);
+    font-weight: 500;
+    font-size: 0.95rem;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: var(--transition);
+}
+
+.nav-link:hover {
+    background: var(--primary-light);
+    color: white;
+}
+
+.logout {
+    background: var(--primary);
+    color: white;
+    padding: 8px 14px;
+    border-radius: 6px;
+}
+
+.logout:hover {
+    background: #025d30;
+}
+
+/* -----------------------------------------------------------
+   MAIN PAGE LAYOUT
+----------------------------------------------------------- */
+.page-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 25px;
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+/* -----------------------------------------------------------
+   FOOTER
+----------------------------------------------------------- */
+.main-footer {
+    text-align: center;
+    font-size: 0.9rem;
+    padding: 20px;
+    margin-top: 40px;
+    color: var(--muted);
+}

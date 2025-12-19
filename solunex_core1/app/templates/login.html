@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Solunex Admin Login</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        /* Login-specific styling overrides */
+        body {
+            background: linear-gradient(135deg, #013220, #001f1a);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-family: "Poppins", sans-serif;
+        }
+
+        .login-container {
+            width: 380px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 18px;
+            padding: 40px;
+            color: white;
+            text-align: center;
+        }
+
+        .login-container h2 {
+            color: #00e676;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .login-container p {
+            color: #bdbdbd;
+            font-size: 0.9rem;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            font-size: 0.9rem;
+            color: #cfcfcf;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px 12px;
+            margin-top: 6px;
+            border: none;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            outline: none;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus {
+            border: 1px solid #00e676;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-login {
+            width: 100%;
+            background: #00e676;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            color: #001f1a;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .btn-login:hover {
+            background: #00c867;
+            transform: translateY(-2px);
+        }
+
+        .footer {
+            margin-top: 25px;
+            font-size: 0.85rem;
+            color: #aaa;
+        }
+
+        .footer a {
+            color: #00e676;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        .solunex-watermark {
+            font-weight: 600;
+            font-size: 1.3rem;
+            margin-bottom: 25px;
+            color: #00e676;
+            text-shadow: 0 0 5px rgba(0,230,118,0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="solunex-watermark">Solunex Core 1</div>
+        <h2>Admin Login</h2>
+        <p>Secure Access Portal</p>
+
+        <form action="/admin/login" method="post">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" name="username" placeholder="Enter admin username" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" name="password" placeholder="Enter password" required>
+            </div>
+
+            <button type="submit" class="btn-login">Sign In</button>
+        </form>
+
+        <div class="footer">
+            <p>© 2025 Solunex Systems</p>
+            <a href="#">Need help?</a>
+        </div>
+    </div>
+</body>
+</html>

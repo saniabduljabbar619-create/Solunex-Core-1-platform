@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+<div class="dashboard-container">
+
+    <!-- Header Section -->
+    <section class="glass card header-card">
+        <div>
+            <h2>Welcome, {{ username or "Administrator" }}</h2>
+            <p class="subtitle">Solunex Core 1 • License Control Dashboard</p>
+        </div>
+        <div class="status-indicator">{{ server_status }}</div>
+    </section>
+
+    <!-- Stats Cards -->
+    <section class="stats-grid">
+
+        <div class="glass stat-card">
+            <h3>Total Licenses</h3>
+            <span id="totalLicenses" class="stat-value">--</span>
+        </div>
+
+        <div class="glass stat-card">
+            <h3>Active Clients</h3>
+            <span id="activeClients" class="stat-value">--</span>
+        </div>
+
+        <div class="glass stat-card">
+            <h3>Today’s Issuances</h3>
+            <span id="todayCount" class="stat-value">--</span>
+        </div>
+
+        <div class="glass stat-card">
+            <h3>Pending Renewals</h3>
+            <span id="pendingRenewals" class="stat-value">--</span>
+        </div>
+
+    </section>
+
+    <!-- Charts Section -->
+    <section class="charts-wrapper">
+
+        <div class="glass chart-card">
+            <h3>License Activity (Last 7 Days)</h3>
+            <canvas id="licenseChart"></canvas>
+        </div>
+
+        <div class="glass chart-card small">
+            <h3>Usage Overview</h3>
+            <canvas id="usageChart"></canvas>
+        </div>
+
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="glass card quick-actions">
+        <h3>Quick Actions</h3>
+        <div class="action-btn-group">
+            <a href="/api/internal/orders" class="action-btn">License API</a>
+            <a href="/admin/posting" class="action-btn">Post Announcement</a>
+            <a href="/admin/services/view" class="action-btn">API Services</a>
+        </div>
+    </section>
+
+    <!-- Updates Section -->
+    <section class="glass card updates">
+        <h3>System Updates</h3>
+        <ul class="update-list">
+            <li>• License issuance API is active and stable</li>
+            <li>• Announcement system fully connected</li>
+            <li>• Analytics engine integrated</li>
+            <li>• Solunex Smart Dashboard enabled</li>
+        </ul>
+    </section>
+
+</div>
+{% endblock %}
+
+{% block body_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+let licenseChartRef = null;
+let usageChartRef = null;
+
+async function loadDashboardStats() {
+    try {
+        const res = await fetch('/admin/dashboard/stats', {
+            method: 'GET',
+            credentials: 'include'
+        });
+
+        if (!res.ok) throw new Error('Failed to load stats');
+        const data = await res.json();
+
+        // ---- UPDATE PRIMARY CARDS ----
+        document.getElementById('totalLicenses').textContent =
+            data.total_licenses ?? 0;
+
+        document.getElementById('activeClients').textContent =
+            data.active_clients ?? 0;
+
+        document.getElementById('todayCount').textContent =
+            data.todays_issuances ?? 0;
+
+        document.getElementById('pendingRenewals').textContent =
+            data.pending_renewals ?? 0;
+
+
+        // ================================
+        //  DESTROY OLD CHARTS BEFORE REDRAW
+        // ================================
+        if (licenseChartRef) {
+            licenseChartRef.destroy();
+            licenseChartRef = null;
+        }
+        if (usageChartRef) {
+            usageChartRef.destroy();
+            usageChartRef = null;
+        }
+
+
+        // ================================
+        //   CHART 1 — License Activity
+        // ================================
+        const labels = data.activity_days ?? ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+        const values = data.activity_counts ?? [1,2,1,3,1,2,0];
+
+        licenseChartRef = new Chart(document.getElementById('licenseChart'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    borderColor: '#04c971',
+                    backgroundColor: 'rgba(4,201,113,0.15)',
+                    fill: true,
+                    tension: 0.35
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+
+
+        // ================================
+        //   CHART 2 — Usage Overview
+        // ================================
+        usageChartRef = new Chart(document.getElementById('usageChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Active', 'Revoked', 'Expired'],
+                datasets: [{
+                    data: [
+                        data.active_clients ?? 0,
+                        data.revoked ?? 0,
+                        data.expired ?? 0
+                    ],
+                    backgroundColor: ['#04c971', '#cccccc', '#ff4c4c']
+                }]
+            },
+            options: {
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+
+
+    } catch (err) {
+        console.error("Dashboard stats failed:", err);
+
+        // fallback UI
+        document.getElementById('totalLicenses').textContent = 0;
+        document.getElementById('activeClients').textContent = 0;
+        document.getElementById('todayCount').textContent = 0;
+        document.getElementById('pendingRenewals').textContent = 0;
+    }
+}
+
+
+// ======================================
+//   AUTO REFRESH EVERY 10 SECONDS
+// ======================================
+document.addEventListener('DOMContentLoaded', () => {
+    loadDashboardStats();
+    setInterval(loadDashboardStats, 10000);
+});
+</script>
+
+
+{% endblock %}

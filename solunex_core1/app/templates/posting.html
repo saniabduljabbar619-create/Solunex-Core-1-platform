@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-wrapper">
+
+    <!-- Page Header -->
+    <section class="glass card page-header">
+        <h2>Post Announcement</h2>
+        <p class="subtitle">Broadcast system messages to all Solunex clients</p>
+    </section>
+
+    <!-- Announcement Form -->
+    <section class="glass card announcement-form">
+
+        <form id="announcementForm">
+
+            <!-- Title -->
+            <div class="form-group">
+                <label>Announcement Title</label>
+                <input type="text" id="title" placeholder="Enter announcement title" required />
+            </div>
+
+            <!-- Category -->
+            <div class="form-group">
+                <label>Category</label>
+                <select id="category">
+                    <option>General Announcement</option>
+                    <option>System Update</option>
+                    <option>Critical Notice</option>
+                    <option>Maintenance</option>
+                </select>
+            </div>
+
+            <!-- Message Body -->
+            <div class="form-group full">
+                <label>Message Body</label>
+                <textarea id="message" placeholder="Write your announcement..." required></textarea>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" class="action-btn send-btn">Send Announcement</button>
+
+            <!-- Response Box -->
+            <div id="responseBox" class="response-box"></div>
+        </form>
+
+    </section>
+
+</div>
+{% endblock %}
+
+{% block body_scripts %}
+<script>
+document.getElementById("announcementForm").addEventListener("submit", sendAnnouncement);
+
+async function sendAnnouncement(e) {
+    e.preventDefault();
+
+    const payload = {
+        title: document.getElementById("title").value,
+        message: document.getElementById("message").value
+    };
+
+    const box = document.getElementById("responseBox");
+    box.innerHTML = "⏳ Sending...";
+    box.className = "response-box pending";
+
+    try {
+
+        // FIXED: Correct API path
+        const res = await fetch("/admin/post_announcement", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            box.innerHTML = "❌ " + (data.detail || "Failed");
+            box.className = "response-box error";
+            return;
+        }
+
+        box.innerHTML = `✅ Announcement queued for <strong>${data.recipients}</strong> recipients.`;
+        box.className = "response-box success";
+
+        // Clear fields
+        document.getElementById("title").value = "";
+        document.getElementById("message").value = "";
+
+    } catch (err) {
+        box.innerHTML = "⚠ Unexpected error sending announcement.";
+        box.className = "response-box error";
+    }
+}
+</script>
+{% endblock %}

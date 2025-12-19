@@ -1,0 +1,186 @@
+/* Table */
+.sol-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.sol-table th {
+    background: #e8f5ee;
+    padding: 12px;
+    font-weight: 600;
+    color: #0a4032;
+}
+
+.sol-table td {
+    padding: 10px;
+    border-bottom: 1px solid #ececec;
+}
+
+.tag {
+    padding: 4px 10px;
+    border-radius: 40px;
+    color: white;
+    font-size: 12px;
+}
+
+.tag.active { background: #00b56e; }
+.tag.revoked { background: #c30010; }
+.tag.expired { background: #a38700; }
+
+/* Buttons */
+.view-btn {
+    padding: 6px 12px;
+    background: #005c54;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.view-btn:hover {
+    background: #00776b;
+}
+
+.danger-btn {
+    background: #c30010;
+    padding: 8px 18px;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.close-btn {
+    padding: 8px 18px;
+    background: #555;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* Modal */
+.modal.hidden { display: none; }
+
+.modal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    width: 420px;
+    padding: 20px;
+}
+
+.modal-actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+
+
+
+
+
+
+
+
+
+
+/* -------------------------
+   License Bank Styles
+   ------------------------- */
+
+.controls .controls-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.controls .input {
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(0,0,0,0.08);
+    background: rgba(255,255,255,0.85);
+    min-width: 180px;
+}
+
+.controls .input.small { width: 90px; padding: 8px; }
+
+.table-wrap { overflow-x: auto; margin-top: 8px; }
+
+.sol-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 900px;
+    font-size: 0.95rem;
+}
+
+.sol-table thead th {
+    text-align: left;
+    padding: 12px;
+    background: rgba(255,255,255,0.6);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    color: var(--dark);
+}
+
+.sol-table tbody td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+    vertical-align: middle;
+}
+
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace; font-size:0.92rem; }
+
+.tag {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.82rem;
+    text-transform: capitalize;
+}
+
+.tag.active { background: rgba(4,201,113,0.12); color: var(--primary); }
+.tag.revoked { background: rgba(220,53,69,0.08); color: #c53030; }
+.tag.expired { background: rgba(255,76,76,0.08); color: #b22222; }
+
+.view-btn, .action-btn, .danger-btn {
+    border: none;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    margin-right: 6px;
+}
+
+.view-btn { background: transparent; color: var(--primary); border: 1px solid rgba(2,122,62,0.08); }
+.action-btn { background: var(--primary); color: #fff; }
+.danger-btn { background: #c93b3b; color: #fff; }
+
+.pagination { display: flex; gap: 12px; align-items: center; justify-content: flex-end; margin-top: 12px; }
+
+/* Modal */
+.modal { position: fixed; inset: 0; z-index: 2000; display: flex; align-items: center; justify-content: center; }
+.modal.hidden { display: none; }
+.modal-overlay { position:absolute; inset:0; background: rgba(10,10,10,0.45); backdrop-filter: blur(2px); }
+.modal-content { position: relative; width: min(920px, 96%); max-height: 92vh; overflow:auto; z-index:2100; padding: 20px; border-radius: 14px; }
+.modal-close { position:absolute; top:12px; right:12px; background:transparent; border:none; font-size:18px; cursor:pointer; }
+
+.modal-body .modal-row { margin: 6px 0; }
+
+.modal-form label { display:block; margin-top:10px; font-weight:600; color:var(--dark); }
+.modal-form .input { width:100%; padding:10px; margin-top:6px; border-radius:8px; border:1px solid rgba(0,0,0,0.06); }
+
+.response-box { padding:10px 12px; border-radius:8px; display:none; }
+.response-box.success { background:#d4edda; color:#155724; display:block; }
+.response-box.error { background:#f8d7da; color:#721c24; display:block; }
+
+/* small helper */
+.small-label { font-size:0.8rem; color:var(--muted); }
