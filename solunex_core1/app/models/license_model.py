@@ -17,30 +17,32 @@ class License(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    # License identity
     license_key = Column(String(64), unique=True, nullable=False, index=True)
     user_email = Column(String(255), nullable=False)
-    app_id = Column(String(100), nullable=False)
 
-    # Status
+    # Primary app for backward compatibility
+    primary_app_id = Column(String(100), nullable=True)
+
     status = Column(Enum(LicenseStatus), default=LicenseStatus.active, nullable=False)
     generated_at = Column(DateTime, default=datetime.utcnow)
     expires_at = Column(DateTime, nullable=True)
     last_verified = Column(DateTime, nullable=True)
 
-    # Payment data
+    # Payment info
     order_id = Column(String(100), nullable=True)
     payment_reference = Column(String(100), nullable=True)
     amount = Column(Float, nullable=True)
     currency = Column(String(10), default="USD", nullable=True)
 
-    # Device binding
-    is_bound = Column(Boolean, default=False)
+    # Device & entitlement summary
     max_devices = Column(Integer, default=1)
-    bound_devices = Column(JSON, default=[])
+    # bound devices → move to Installation table
+    # bound_devices = Column(JSON, default=[]) # removed for platform clarity
 
-    # Metadata (renamed from 'metadata' → valid name)
+    # Extra metadata
     meta = Column(JSON, default={})
 
-    def __repr__(self):
-        return f"<License {self.license_key} ({self.status.value}) for {self.user_email}>"
+
+
+
+
